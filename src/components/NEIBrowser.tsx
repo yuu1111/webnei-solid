@@ -47,8 +47,8 @@ export default function NEIBrowser() {
 
   if (makeOrUse === 'use' && !useLoading && useData) {
     const showLoadAll =
-      (useData.GTRecipes?.length === 100) ||
-      (useData.OtherRecipes?.length === 100)
+      (useData.gtRecipes?.length === 100) ||
+      (useData.otherRecipes?.length === 100)
 
     return (
       <>

@@ -7,21 +7,21 @@ import type {
 } from '~/types'
 
 export default function MachineTabs({
-  GTRecipes,
-  OtherRecipes,
+  gtRecipes,
+  otherRecipes,
 }: AssociatedRecipesInterface) {
   const [activeTab, setActiveTab] = useState(0)
 
   const { iconKeys, iconToRecipes, iconToLocalizedName } = useMemo(() => {
-    if (!GTRecipes || !OtherRecipes) {
+    if (!gtRecipes || !otherRecipes) {
       return { iconKeys: [], iconToRecipes: new Map(), iconToLocalizedName: new Map() }
     }
 
     const allRecipes: [string, BaseRecipeInterface | GTRecipeInterface][] = []
-    for (const recipe of OtherRecipes) {
+    for (const recipe of otherRecipes) {
       allRecipes.push(['Other', recipe])
     }
-    for (const recipe of GTRecipes) {
+    for (const recipe of gtRecipes) {
       allRecipes.push(['GT', recipe])
     }
 
@@ -55,9 +55,9 @@ export default function MachineTabs({
       iconToRecipes: iconToRecipesMap,
       iconToLocalizedName: iconToLocalizedNameMap,
     }
-  }, [GTRecipes, OtherRecipes])
+  }, [gtRecipes, otherRecipes])
 
-  if (!GTRecipes || !OtherRecipes) {
+  if (!gtRecipes || !otherRecipes) {
     return null
   }
 

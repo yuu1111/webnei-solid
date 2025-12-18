@@ -1,10 +1,8 @@
-import { GraphQLClient, gql } from 'graphql-request'
+import { GraphQLClient } from 'graphql-request'
 
 export const graphqlClient = new GraphQLClient('http://localhost:5000/graphql')
 
-export { gql }
-
-export const SIDEBAR_ITEMS_QUERY = gql`
+export const SIDEBAR_ITEMS_QUERY = `
   query SidebarItems($limit: Int!, $search: String!, $mode: String!) {
     getNSidebarItems(limit: $limit, search: $search, mode: $mode) {
       itemId
@@ -15,8 +13,8 @@ export const SIDEBAR_ITEMS_QUERY = gql`
   }
 `
 
-const RECIPE_FRAGMENTS = gql`
-  fragment NEIFluidFragment on NEIFluid {
+const RECIPE_FRAGMENTS = `
+  fragment NEIFluidFragment on NEI_Fluid {
     density
     fluidId
     gaseous
@@ -36,7 +34,7 @@ const RECIPE_FRAGMENTS = gql`
     viscosity
   }
 
-  fragment NEIItemFragment on NEIItem {
+  fragment NEIItemFragment on NEI_Item {
     id
     localizedName
     stackSize
@@ -55,12 +53,12 @@ const RECIPE_FRAGMENTS = gql`
     unlocalizedName
   }
 
-  fragment RecipeDimensionFragment on NEIRecipeDimensions {
+  fragment RecipeDimensionFragment on NEI_Recipe_Dimensions {
     height
     width
   }
 
-  fragment NEIDimensionFragment on NEIAllDimensions {
+  fragment NEIDimensionFragment on NEI_All_Dimensions {
     itemInputDims {
       ...RecipeDimensionFragment
     }
@@ -75,7 +73,7 @@ const RECIPE_FRAGMENTS = gql`
     }
   }
 
-  fragment NEIBaseRecipeFragment on NEIBaseRecipe {
+  fragment NEIBaseRecipeFragment on NEI_Base_Recipe {
     recipeId
     recipeType
     iconId
@@ -99,7 +97,7 @@ const RECIPE_FRAGMENTS = gql`
 
 const RECIPE_CORE = `
   singleId
-  GTRecipes {
+  gtRecipes {
     localizedMachineName
     amperage
     voltage
@@ -114,12 +112,12 @@ const RECIPE_CORE = `
     shapeless
     voltageTier
   }
-  OtherRecipes {
+  otherRecipes {
     ...NEIBaseRecipeFragment
   }
 `
 
-export const MAKE_RECIPES_QUERY = gql`
+export const MAKE_RECIPES_QUERY = `
   query MakeItems($single_id: String!) {
     getRecipesThatMakeSingleId(itemId: $single_id) {
       ${RECIPE_CORE}
@@ -128,7 +126,7 @@ export const MAKE_RECIPES_QUERY = gql`
   ${RECIPE_FRAGMENTS}
 `
 
-export const USE_RECIPES_QUERY = gql`
+export const USE_RECIPES_QUERY = `
   query UseItems($single_id: String!) {
     getRecipesThatUseSingleId(itemId: $single_id) {
       ${RECIPE_CORE}

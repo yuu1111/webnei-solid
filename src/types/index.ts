@@ -78,8 +78,8 @@ export interface GTRecipeInterface {
 
 export interface AssociatedRecipesInterface {
   singleId: string
-  GTRecipes: GTRecipeInterface[]
-  OtherRecipes: BaseRecipeInterface[]
+  gtRecipes: GTRecipeInterface[]
+  otherRecipes: BaseRecipeInterface[]
 }
 
 export interface SidebarItemInterface {
