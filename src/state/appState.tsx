@@ -14,9 +14,11 @@ interface AppStateInterface {
 }
 
 
+const isClient = typeof window !== 'undefined';
+
 const [appState, setAppState] = createStore<AppStateInterface>({
-  height: window.innerHeight,
-  width: window.innerWidth,
+  height: isClient ? window.innerHeight : 800,
+  width: isClient ? window.innerWidth : 1200,
   search: '',
   currentBasicSidebarItem: {},
   gql_recipe_response: '',
