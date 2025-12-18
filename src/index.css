@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.tooltip-content {
+  white-space: pre-wrap;
+}
+
+.cell {
+  border: 1px solid #4a5568;
+  cursor: pointer;
+}
+
+.cell:hover {
+  border-color: #63b3ed;
+}
+
+.cell-no-outline {
+  cursor: pointer;
+}

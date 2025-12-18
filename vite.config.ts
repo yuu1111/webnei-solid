@@ -1,14 +1,21 @@
-import solid from "solid-start/vite";
-import { defineConfig } from "vite";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
-  plugins: [solid({ ssr: false })],
-  build: {
-    minify: 'esbuild'
+  plugins: [react()],
+  resolve: {
+    alias: {
+      '~': path.resolve(__dirname, './src'),
+    },
   },
   server: {
+    port: 3000,
     watch: {
-      ignored: ['**/nei_images/**']
-    }
-  }
-});
+      ignored: ['**/nei_images/**'],
+    },
+  },
+  build: {
+    minify: 'esbuild',
+  },
+})

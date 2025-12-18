@@ -1,4 +1,3 @@
-
 export interface BasicDimensionsInterface {
   width: number
   height: number
@@ -14,10 +13,8 @@ export interface RecipeDimensionInterface {
 export interface ItemInterface {
   id: string
   itemId: number
-
   position: number
   stackSize: number
-
   imageFilePath: string
   internalName: string
   itemDamage: number
@@ -28,14 +25,12 @@ export interface ItemInterface {
   nbt: string
   tooltip: string
   unlocalizedName: string
-
   input: boolean
   outputProbability: number
 }
 
 export interface FluidInterface {
   id: string
-
   position: number
   liters: number
   density: number
@@ -50,33 +45,28 @@ export interface FluidInterface {
   temperature: number
   unlocalizedName: string
   viscosity: number
-
   input: boolean
   outputProbability: number
 }
 
 export interface BaseRecipeInterface {
-  recipeId: string,
-  iconId: string,
-  recipeType: string,
+  recipeId: string
+  iconId: string
+  recipeType: string
   dimensions: RecipeDimensionInterface
-  inputItems: Array<ItemInterface>
-  inputFluids: Array<FluidInterface>
-  outputItems: Array<ItemInterface>
-  outputFluids: Array<FluidInterface>
+  inputItems: ItemInterface[]
+  inputFluids: FluidInterface[]
+  outputItems: ItemInterface[]
+  outputFluids: FluidInterface[]
 }
 
 export interface GTRecipeInterface {
-  recipeId: string,
+  recipeId: string
   baseRecipe: BaseRecipeInterface
-
-  // Type info for recipe
   localizedMachineName: string
   iconInfo: string
   iconId: string
   shapeless: boolean
-
-  // GT info for recipe
   additionalInfo: string
   amperage: number
   durationTicks: number
@@ -88,8 +78,8 @@ export interface GTRecipeInterface {
 
 export interface AssociatedRecipesInterface {
   singleId: string
-  GTRecipes: Array<GTRecipeInterface>
-  OtherRecipes: Array<BaseRecipeInterface>
+  GTRecipes: GTRecipeInterface[]
+  OtherRecipes: BaseRecipeInterface[]
 }
 
 export interface SidebarItemInterface {

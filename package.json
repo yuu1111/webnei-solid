@@ -1,31 +1,38 @@
 {
-  "name": "webnei-solid",
-  "scripts": {
-    "dev": "solid-start dev",
-    "build": "solid-start build",
-    "start": "solid-start start"
-  },
+  "name": "webnei",
+  "private": true,
+  "version": "0.0.1",
   "type": "module",
-  "devDependencies": {
-    "@types/bun": "^1.2.17",
-    "@types/node": "^18.11.18",
-    "esbuild": "^0.14.54",
-    "postcss": "^8.4.21",
-    "solid-start-node": "^0.2.19",
-    "typescript": "^4.9.4",
-    "vite": "^4.1.4"
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "lint": "biome lint ./src",
+    "format": "biome format ./src --write",
+    "check": "biome check ./src"
   },
   "dependencies": {
-    "@hope-ui/solid": "^0.6.7",
-    "@solid-primitives/graphql": "^1.5.7",
-    "@solid-primitives/scheduled": "^1.3.2",
-    "@solidjs/meta": "^0.28.2",
-    "@solidjs/router": "^0.8.2",
-    "@stitches/core": "^1.2.8",
-    "solid-js": "^1.7.2",
-    "solid-start": "^0.2.26",
-    "solid-transition-group": "^0.0.10",
-    "undici": "^5.15.1"
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "@tanstack/react-query": "^5.90.12",
+    "graphql-request": "^7.4.0",
+    "graphql": "^16.12.0",
+    "zustand": "^5.0.9",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.4.0",
+    "lucide-react": "^0.561.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.10",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
+    "tailwindcss": "^4.1.18",
+    "postcss": "^8.5.6",
+    "autoprefixer": "^10.4.23",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0"
   },
   "packageManager": "bun@1.3.5"
 }

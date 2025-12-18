@@ -1,213 +1,69 @@
-import {
-    createEffect,
-    createSignal,
-    Show,
-} from "solid-js";
-import { appState, setAppState } from '~/state/appState'
-import { gql, createGraphQLClient } from "@solid-primitives/graphql"
-
-import { Button, Box } from "@hope-ui/solid"
-
-import MachineTabs from "./MachineTabs"
-import { AssociatedRecipesInterface } from "./Interfaces";
-
+import { useQuery } from '@tanstack/react-query'
+import { graphqlClient, MAKE_RECIPES_QUERY, USE_RECIPES_QUERY } from '~/lib/graphql'
+import { useAppState } from '~/hooks/useAppState'
+import MachineTabs from './MachineTabs'
+import type { AssociatedRecipesInterface } from '~/types'
 
 interface MakeQueryResponse {
-  getRecipesThatMakeSingleId: AssociatedRecipesInterface | {}
+  getRecipesThatMakeSingleId: AssociatedRecipesInterface
 }
+
 interface UseQueryResponse {
-  getRecipesThatUseSingleId: AssociatedRecipesInterface | {}
+  getRecipesThatUseSingleId: AssociatedRecipesInterface
 }
 
+export default function NEIBrowser() {
+  const { currentBasicSidebarItem, makeOrUse } = useAppState()
 
-function NEIBrowser() {
-  const graphQLClient = createGraphQLClient("http://localhost:5000/graphql");
+  const itemId = currentBasicSidebarItem?.itemId ?? ''
 
-  const queryCore = `
-    singleId
-    GTRecipes {
-      localizedMachineName
-      amperage
-      voltage
-      durationTicks
-      baseRecipe {
-        ...NEIBaseRecipeFragment
-      }
-      additionalInfo
-      recipeId
-      requiresCleanroom
-      requiresLowGravity
-      shapeless
-      voltageTier
-    }
-    OtherRecipes {
-      ...NEIBaseRecipeFragment
-    }
-  `
-
-  const queryFragments = `
-  fragment NEIFluidFragment on NEIFluid {
-    density
-    fluidId
-    gaseous
-    id
-    imageFilePath
-    input
-    internalName
-    localizedName
-    liters
-    luminosity
-    modId
-    nbt
-    outputProbability
-    position
-    temperature
-    unlocalizedName
-    viscosity
-  }
-  
-  fragment NEIItemFragment on NEIItem {
-    id
-    localizedName
-    stackSize
-    imageFilePath
-    input
-    internalName
-    itemDamage
-    itemId
-    maxDamage
-    maxStackSize
-    modId
-    nbt
-    outputProbability
-    position
-    tooltip
-    unlocalizedName
-  }
-  
-  fragment RecipeDimensionFragment on NEIRecipeDimensions {
-    height
-    width
-  }
-  
-  fragment NEIDimensionFragment on NEIAllDimensions {
-    itemInputDims {
-      ...RecipeDimensionFragment
-    }
-    itemOutputDims {
-      ...RecipeDimensionFragment
-    }
-    fluidInputDims {
-      ...RecipeDimensionFragment
-    }
-    fluidOutputDims {
-      ...RecipeDimensionFragment
-    }
-  }
-  
-  fragment NEIBaseRecipeFragment on NEIBaseRecipe {
-    recipeId
-
-    recipeType
-    iconId
-    dimensions {
-      ...NEIDimensionFragment
-    }
-    inputItems {
-      ...NEIItemFragment
-    }
-    outputItems {
-      ...NEIItemFragment
-    }
-    inputFluids {
-      ...NEIFluidFragment
-    }
-    outputFluids {
-      ...NEIFluidFragment
-    }
-  }
-  `
-
-  const [makeInput, setMakeInput] = createSignal("")
-  const [useInput, setUseInput] = createSignal("")
-
-  const [makeData, {refetch: refetchMakeData}] = graphQLClient<MakeQueryResponse>(
-    gql`
-    query MakeItems($single_id: String!) {
-      getRecipesThatMakeSingleId(itemId: $single_id) {
-        ${queryCore}
-      }
-    }
-    ${queryFragments}
-    `,
-    () => ({
-      single_id: makeInput(),
-    }),
-    { getRecipesThatMakeSingleId: {} } // Initial value
-  );
-
-  const [useData, {refetch: refetchUseData}] = graphQLClient<UseQueryResponse>(
-    gql`
-    query UseItems($single_id: String!) {
-      getRecipesThatUseSingleId(itemId: $single_id) {
-        ${queryCore}
-      }
-    }
-    ${queryFragments}
-    `,
-    () => ({
-      single_id: useInput(),
-    }),
-    { getRecipesThatUseSingleId: {} } // Initial value
-  );
-
-  createEffect(() => {
-    // When a new appState.currentBasicSidebarItem is set, check if it is "make" or "use"
-    // Then update the relevant GraphQL query input
-    if (appState.currentBasicSidebarItem.itemId) {
-      if (appState.makeOrUse === "make") {
-        setMakeInput(appState.currentBasicSidebarItem.itemId)
-      } else if (appState.makeOrUse === "use") {
-        setUseInput(appState.currentBasicSidebarItem.itemId)
-      }
-    }
+  const { data: makeData, isLoading: makeLoading } = useQuery({
+    queryKey: ['makeRecipes', itemId],
+    queryFn: async () => {
+      const result = await graphqlClient.request<MakeQueryResponse>(
+        MAKE_RECIPES_QUERY,
+        { single_id: itemId }
+      )
+      return result.getRecipesThatMakeSingleId
+    },
+    enabled: makeOrUse === 'make' && !!itemId,
   })
 
-  return (
-    // Why "@ts-ignore"?
-    // For some reason Typescript doesn't recognize that the graphql output is
-    //  guaranteed to be defined (as AssociatedRecipes) when the query is not loading.
+  const { data: useData, isLoading: useLoading } = useQuery({
+    queryKey: ['useRecipes', itemId],
+    queryFn: async () => {
+      const result = await graphqlClient.request<UseQueryResponse>(
+        USE_RECIPES_QUERY,
+        { single_id: itemId }
+      )
+      return result.getRecipesThatUseSingleId
+    },
+    enabled: makeOrUse === 'use' && !!itemId,
+  })
 
-    <>
-      <Show when={appState.makeOrUse === "make"}>
-        <Show when={!makeData.loading}>
-          {/* @ts-ignore */}
-          <MachineTabs
-            {...(makeData()?.getRecipesThatMakeSingleId)}
-          />
-        </Show>
-      </Show>
-      <Show when={appState.makeOrUse === "use"}>
-        <Show when={!useData.loading}>
-          {/* @ts-ignore */}
-          <MachineTabs
-            {...(useData()?.getRecipesThatUseSingleId as AssociatedRecipesInterface)}
-          />
+  if (makeOrUse === 'make' && !makeLoading && makeData) {
+    return <MachineTabs {...makeData} />
+  }
 
-          {/* @ts-ignore */}
-          <Show when={
-            (useData()?.getRecipesThatUseSingleId as AssociatedRecipesInterface).GTRecipes.length == 100
-            ||
-            (useData()?.getRecipesThatUseSingleId as AssociatedRecipesInterface).OtherRecipes.length == 100
-          }>
-            <Button colorScheme="warning">Load all recipes (may take a LONG time)</Button>
-            { /* TODO: onclick resend last query but with no limit */ }
-            <Box height="100px"></Box>
-          </Show>
-        </Show>
-      </Show>
-    </>
-  )
+  if (makeOrUse === 'use' && !useLoading && useData) {
+    const showLoadAll =
+      (useData.GTRecipes?.length === 100) ||
+      (useData.OtherRecipes?.length === 100)
+
+    return (
+      <>
+        <MachineTabs {...useData} />
+        {showLoadAll && (
+          <>
+            <button className="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded mt-4">
+              Load all recipes (may take a LONG time)
+            </button>
+            <div className="h-24" />
+          </>
+        )}
+      </>
+    )
+  }
+
+  return null
 }
-
-export default NEIBrowser;

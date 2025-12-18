@@ -1,235 +1,234 @@
-import { Index } from 'solid-js'
-import { Box, Center, Grid, GridItem } from '@hope-ui/solid'
-
-import { appState, setAppState } from '~/state/appState'
-import { appStyles } from './AppStyle'
+import { useAppState } from '~/hooks/useAppState'
 import ClickableItem from './ClickableItem'
-import {
+import type {
   BaseRecipeInterface,
   BasicDimensionsInterface,
   FluidInterface,
   GTRecipeInterface,
   ItemInterface,
-} from './Interfaces'
-
-import "./FallbackRecipeRenderer.css"
-
+} from '~/types'
 
 interface FallbackRecipeRendererProps {
   recipe: BaseRecipeInterface | GTRecipeInterface
   recipeType: string
 }
 
-const scaleFactor = 1.25
-const gap = 2
-const recipePadding = 10
-const boxCountToGridSize = (boxSize: number) => {
-  return (appState.imageWidth + 2) * scaleFactor * boxSize + gap * (boxSize-1)
-}
+const SCALE_FACTOR = 1.25
+const GAP = 2
 
-const FallbackRecipeRenderer = (props: FallbackRecipeRendererProps) => {
-  // Renders a recipe as a grid -> grid (no darkUI asset)
+export default function FallbackRecipeRenderer({
+  recipe,
+  recipeType,
+}: FallbackRecipeRendererProps) {
+  const { imageWidth } = useAppState()
 
-  const baseRecipe = props.recipeType === 'GT' ? (props.recipe as GTRecipeInterface).baseRecipe : (props.recipe as BaseRecipeInterface)
+  const boxCountToGridSize = (boxSize: number) => {
+    return (imageWidth + 2) * SCALE_FACTOR * boxSize + GAP * (boxSize - 1)
+  }
 
-  // Compute overall recipe grid attributes
-  const maxInputBoxWidth = Math.max(baseRecipe.dimensions.itemInputDims.width, baseRecipe.dimensions.fluidInputDims.width)
+  const baseRecipe =
+    recipeType === 'GT'
+      ? (recipe as GTRecipeInterface).baseRecipe
+      : (recipe as BaseRecipeInterface)
+
+  const maxInputBoxWidth = Math.max(
+    baseRecipe.dimensions.itemInputDims.width,
+    baseRecipe.dimensions.fluidInputDims.width
+  )
   const inputWidth = boxCountToGridSize(maxInputBoxWidth)
 
-  const maxOutputBoxWidth = Math.max(baseRecipe.dimensions.itemOutputDims.width, baseRecipe.dimensions.fluidOutputDims.width)
+  const maxOutputBoxWidth = Math.max(
+    baseRecipe.dimensions.itemOutputDims.width,
+    baseRecipe.dimensions.fluidOutputDims.width
+  )
   const outputWidth = boxCountToGridSize(maxOutputBoxWidth)
 
-  const inputHeight = (
-    boxCountToGridSize(baseRecipe.dimensions.itemInputDims.height) 
-    + boxCountToGridSize(baseRecipe.dimensions.fluidInputDims.height)
-    + gap
-  )
-  const outputHeight = (
-    boxCountToGridSize(baseRecipe.dimensions.itemOutputDims.height)
-    + boxCountToGridSize(baseRecipe.dimensions.fluidOutputDims.height)
-    + gap
-  )
+  const inputHeight =
+    boxCountToGridSize(baseRecipe.dimensions.itemInputDims.height) +
+    boxCountToGridSize(baseRecipe.dimensions.fluidInputDims.height) +
+    GAP
+  const outputHeight =
+    boxCountToGridSize(baseRecipe.dimensions.itemOutputDims.height) +
+    boxCountToGridSize(baseRecipe.dimensions.fluidOutputDims.height) +
+    GAP
   const maxHeight = Math.max(inputHeight, outputHeight)
 
-  // Compute GT recipe info (if applicable)
-  var GTRecipeInfo = <></>
-  if (props.recipeType === 'GT') {
-    /* 
-    A usual GT recipe string looks like:
-    Total: 60,000 EU
-    Voltage: 600 EU/t (EV)
-    Time: 5 secs
+  let gtRecipeInfo = null
+  if (recipeType === 'GT') {
+    const gtRecipe = recipe as GTRecipeInterface
+    const infoBuffer: string[] = []
 
-    There are optional fields that get added contextually:
-    Needs Cleanroom
-    Needs Low Gravity
-    Heat Capacity: 3,000 K (Nichrome)
-    Amperage: 3
-    Time: 0.8 secs (16 ticks)
-    Start: 60,000,000 EU (MK 1)
-    */
-    const recipe = props.recipe as GTRecipeInterface
-    let infoBuffer: string[] = []
-
-    const totalEU = recipe.amperage * recipe.voltage * recipe.durationTicks
-    const tickInfo = recipe.durationTicks < 20 ? ` (${recipe.durationTicks} ticks)` : ''
+    const totalEU = gtRecipe.amperage * gtRecipe.voltage * gtRecipe.durationTicks
+    const tickInfo =
+      gtRecipe.durationTicks < 20 ? ` (${gtRecipe.durationTicks} ticks)` : ''
 
     infoBuffer.push(`Total: ${totalEU.toLocaleString()} EU`)
-    infoBuffer.push(`Voltage: ${recipe.voltage.toLocaleString()} EU/t (${recipe.voltageTier})`)
-    infoBuffer.push(`Time: ${(recipe.durationTicks / 20).toLocaleString()} secs${tickInfo}`)
-    if (recipe.requiresCleanroom) {
-      infoBuffer.push(`Needs Cleanroom`)
+    infoBuffer.push(
+      `Voltage: ${gtRecipe.voltage.toLocaleString()} EU/t (${gtRecipe.voltageTier})`
+    )
+    infoBuffer.push(
+      `Time: ${(gtRecipe.durationTicks / 20).toLocaleString()} secs${tickInfo}`
+    )
+    if (gtRecipe.requiresCleanroom) {
+      infoBuffer.push('Needs Cleanroom')
     }
-    if (recipe.requiresLowGravity) {
-      infoBuffer.push(`Needs Low Gravity`)
+    if (gtRecipe.requiresLowGravity) {
+      infoBuffer.push('Needs Low Gravity')
     }
-    if (recipe.additionalInfo) {
-      infoBuffer.push(recipe.additionalInfo)
+    if (gtRecipe.additionalInfo) {
+      infoBuffer.push(gtRecipe.additionalInfo)
     }
 
-    GTRecipeInfo = (
-      <p class="gtinfo" style="color:white">
+    gtRecipeInfo = (
+      <p className="text-white whitespace-pre-wrap text-left mt-4 pb-4">
         {infoBuffer.join('\n')}
       </p>
     )
   }
 
-  // Construct single recipe grid
   return (
-    <Box className="fallback" marginBottom={recipePadding}>
-      <Grid
-        templateColumns={
-          `
-          ${inputWidth}px
-          60px
-          ${outputWidth}px
-        `}
-        gap={0}
-        height={`${maxHeight}px`}
-        bg={appStyles.recipeBrowserColor}
+    <div className="border border-[#f7ede2] mb-2.5">
+      <div
+        className="grid bg-[#001219]"
+        style={{
+          gridTemplateColumns: `${inputWidth}px 60px ${outputWidth}px`,
+          height: `${maxHeight}px`,
+        }}
       >
-        <Center>
+        <div className="flex items-center justify-center">
           <ItemAndFluidGrid
             items={baseRecipe.inputItems}
             fluids={baseRecipe.inputFluids}
             itemDims={baseRecipe.dimensions.itemInputDims}
             fluidDims={baseRecipe.dimensions.fluidInputDims}
+            boxCountToGridSize={boxCountToGridSize}
           />
-        </Center>
+        </div>
 
-        <Center>
-          <p style={`color:${appStyles.recipeArrowColor}; font-size:40px; margin:0px;`}>⇒</p>
-        </Center>
+        <div className="flex items-center justify-center">
+          <p className="text-white text-4xl m-0">⇒</p>
+        </div>
 
-        <Center>
+        <div className="flex items-center justify-center">
           <ItemAndFluidGrid
             items={baseRecipe.outputItems}
             fluids={baseRecipe.outputFluids}
             itemDims={baseRecipe.dimensions.itemOutputDims}
             fluidDims={baseRecipe.dimensions.fluidOutputDims}
+            boxCountToGridSize={boxCountToGridSize}
           />
-        </Center>
-      </Grid>
-      {GTRecipeInfo}
-    </Box>
-  );
-}
-
-interface ItemAndFluidGridProps {
-  items: Array<ItemInterface>
-  fluids: Array<FluidInterface>
-  itemDims: BasicDimensionsInterface
-  fluidDims: BasicDimensionsInterface
-}
-
-const ItemAndFluidGrid = (props: ItemAndFluidGridProps) => {
-  // Create hash map of position -> item or fluid
-  // Then iterate over the grid positions and render the item or fluid if it exists
-  // Note: indexes are column-major order, so need to convert to row-major order
-  
-  const positionToItemMapping = props.items.reduce((map, obj) => {
-    map.set(obj.position, obj);
-    return map;
-  }, new Map<number, ItemInterface>());
-  const positionToFluidMapping = props.fluids.reduce((map, obj) => {
-    map.set(obj.position, obj);
-    return map;
-  }, new Map<number, FluidInterface>());
-
-  const constructGrid = (dimension: BasicDimensionsInterface, positionMapping: Map<number, ItemInterface | FluidInterface>) => {
-    return (
-      <Grid
-        templateColumns={`repeat(${dimension.width}, 1fr)`}
-        templateRows={`repeat(${dimension.height}, 1fr)`}
-        gap={gap}
-        height={boxCountToGridSize(dimension.height)}
-        width={boxCountToGridSize(dimension.width)}
-      >
-        <Index each={Array.from({ length: dimension.width * dimension.height })}>
-          {(_, index) => {
-            const index_obj = positionMapping.get(index);
-
-            if (index_obj) {
-              let clickableType = "";
-              let quantity = -1;
-
-              if (index_obj.hasOwnProperty("stackSize")) {
-                clickableType = "item";
-                quantity = (index_obj as ItemInterface).stackSize;
-              } else if (index_obj.hasOwnProperty("liters")) {
-                clickableType = "fluid";
-                quantity = (index_obj as FluidInterface).liters;
-              } else {
-                console.log("Unknown clickable type");
-              }
-
-              const tooltipLabel = clickableType == "item" ? (index_obj as ItemInterface).tooltip : "";
-
-              return (
-                <GridItem bg={appStyles.recipeGridColor}>
-                  <Center>
-                    <ClickableItem
-                      tooltipLabel={index_obj.localizedName}
-                      basic_display_info={{
-                        itemId: index_obj.id,
-                        localizedName: index_obj.localizedName,
-                        tooltip: tooltipLabel,
-                        imageFilePath: index_obj.imageFilePath,
-                      }}
-                      divClass={"cellNoOutline"}
-                      scaleFactor={scaleFactor}
-                      advanced_display_info={{quantity: quantity, clickableType: clickableType}}
-                    />
-                  </Center>
-                </GridItem>
-              );
-            } else return (
-              // No item at this position
-              <GridItem
-                bg={appStyles.recipeGridColor}
-              />
-            );
-          }}
-        </Index>
-      </Grid>
-    )
-  }
-
-  const itemGrid = constructGrid(props.itemDims, positionToItemMapping);
-  const fluidGrid = constructGrid(props.fluidDims, positionToFluidMapping);
-
-  return (
-    <>
-      <Grid
-        templateRows={`${boxCountToGridSize(props.itemDims.height)}px ${boxCountToGridSize(props.fluidDims.height)}px`}
-        gap={gap}
-      >
-        {itemGrid}
-        {fluidGrid}
-      </Grid>
-    </>
+        </div>
+      </div>
+      {gtRecipeInfo}
+    </div>
   )
 }
 
+interface ItemAndFluidGridProps {
+  items: ItemInterface[]
+  fluids: FluidInterface[]
+  itemDims: BasicDimensionsInterface
+  fluidDims: BasicDimensionsInterface
+  boxCountToGridSize: (boxSize: number) => number
+}
 
-export default FallbackRecipeRenderer;
+function ItemAndFluidGrid({
+  items,
+  fluids,
+  itemDims,
+  fluidDims,
+  boxCountToGridSize,
+}: ItemAndFluidGridProps) {
+  const positionToItemMapping = items.reduce((map, obj) => {
+    map.set(obj.position, obj)
+    return map
+  }, new Map<number, ItemInterface>())
+
+  const positionToFluidMapping = fluids.reduce((map, obj) => {
+    map.set(obj.position, obj)
+    return map
+  }, new Map<number, FluidInterface>())
+
+  const constructGrid = (
+    dimension: BasicDimensionsInterface,
+    positionMapping: Map<number, ItemInterface | FluidInterface>
+  ) => {
+    return (
+      <div
+        className="grid"
+        style={{
+          gridTemplateColumns: `repeat(${dimension.width}, 1fr)`,
+          gridTemplateRows: `repeat(${dimension.height}, 1fr)`,
+          gap: GAP,
+          height: boxCountToGridSize(dimension.height),
+          width: boxCountToGridSize(dimension.width),
+        }}
+      >
+        {Array.from({ length: dimension.width * dimension.height }).map(
+          (_, index) => {
+            const indexObj = positionMapping.get(index)
+
+            if (indexObj) {
+              let clickableType = ''
+              let quantity = -1
+
+              if ('stackSize' in indexObj) {
+                clickableType = 'item'
+                quantity = (indexObj as ItemInterface).stackSize
+              } else if ('liters' in indexObj) {
+                clickableType = 'fluid'
+                quantity = (indexObj as FluidInterface).liters
+              }
+
+              const tooltipLabel =
+                clickableType === 'item'
+                  ? (indexObj as ItemInterface).tooltip
+                  : ''
+
+              return (
+                <div
+                  key={index}
+                  className="bg-[#343a40] flex items-center justify-center"
+                >
+                  <ClickableItem
+                    tooltipLabel={indexObj.localizedName}
+                    basic_display_info={{
+                      itemId: indexObj.id,
+                      localizedName: indexObj.localizedName,
+                      tooltip: tooltipLabel,
+                      imageFilePath: indexObj.imageFilePath,
+                    }}
+                    divClass="cellNoOutline"
+                    scaleFactor={SCALE_FACTOR}
+                    advanced_display_info={{
+                      quantity: quantity,
+                      clickableType: clickableType,
+                    }}
+                  />
+                </div>
+              )
+            }
+
+            return <div key={index} className="bg-[#343a40]" />
+          }
+        )}
+      </div>
+    )
+  }
+
+  const itemGrid = constructGrid(itemDims, positionToItemMapping)
+  const fluidGrid = constructGrid(fluidDims, positionToFluidMapping)
+
+  return (
+    <div
+      className="grid"
+      style={{
+        gridTemplateRows: `${boxCountToGridSize(itemDims.height)}px ${boxCountToGridSize(fluidDims.height)}px`,
+        gap: GAP,
+      }}
+    >
+      {itemGrid}
+      {fluidGrid}
+    </div>
+  )
+}

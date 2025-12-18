@@ -1,25 +1,38 @@
-public/nei_images/
+# Dependencies
+node_modules/
 
-dist
-.solid
-.output
-.vercel
-.netlify
-netlify
+# Build output
+dist/
 
-# dependencies
-/node_modules
+# Environment
+.env
+.env.local
+.env.*.local
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-*.launch
-.settings/
+# TypeScript
+*.tsbuildinfo
 
-# Temp
-gitignore
+# Vite
+*.local
 
-# System Files
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# System
 .DS_Store
 Thumbs.db
+
+# Deployment
+.vercel/
+.netlify/
+
+# Project specific
+public/nei_images/

@@ -1,33 +1,28 @@
-import type { JSX } from 'solid-js';
-import { Center, Grid, GridItem } from '@hope-ui/solid'
-import Items from "~/components/Items";
-import SearchBar from "~/components/SearchBar";
-import { appStyles } from '~/components/AppStyle'
-
+import Items from '~/components/Items'
+import SearchBar from '~/components/SearchBar'
 
 interface SidebarProps {
-  ownHeight: number;
-  ownWidth: number;
+  ownHeight: number
+  ownWidth: number
 }
 
-const searchBoxHeight = 50;
+const SEARCH_BOX_HEIGHT = 50
 
-const Sidebar = (props: SidebarProps): JSX.Element => {
-
+export default function Sidebar({ ownHeight, ownWidth }: SidebarProps) {
   return (
-    <>
-      <Grid templateRows="repeat(2, 1fr)" gap={0} height={props.ownHeight}>
-        <GridItem bg={appStyles.searchZoneColor}>
-          <Center>
-            <Items ownHeight={props.ownHeight - searchBoxHeight} ownWidth={props.ownWidth}/>
-          </Center>
-        </GridItem>
-        <GridItem bg={appStyles.searchZoneColor}>
-          <SearchBar/>
-        </GridItem>
-      </Grid>
-    </>
-  );
+    <div
+      className="grid h-full"
+      style={{
+        gridTemplateRows: `1fr ${SEARCH_BOX_HEIGHT}px`,
+        height: ownHeight,
+      }}
+    >
+      <div className="bg-[#2b2d42] flex justify-center overflow-hidden">
+        <Items ownHeight={ownHeight - SEARCH_BOX_HEIGHT} ownWidth={ownWidth} />
+      </div>
+      <div className="bg-[#2b2d42]">
+        <SearchBar />
+      </div>
+    </div>
+  )
 }
-
-export default Sidebar;

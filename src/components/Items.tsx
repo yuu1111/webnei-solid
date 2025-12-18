@@ -1,82 +1,77 @@
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { graphqlClient, SIDEBAR_ITEMS_QUERY } from '~/lib/graphql'
+import { useAppState } from '~/hooks/useAppState'
+import type { SidebarItemInterface } from '~/types'
 import ClickableItem from './ClickableItem'
-import {
-  createMemo,
-  Index,
-  Show,
-} from "solid-js";
-import { appState } from '~/state/appState'
-import { gql, createGraphQLClient } from "@solid-primitives/graphql"
-import { SidebarItemInterface } from './Interfaces';
 
-import "./Items.css"
+const BOX_WIDTH = 40
 
-// Modified from https://www.solidjs.com/examples/ethasketch
-
-
-const boxWidth = 40;
-
-function Items(props: {ownWidth: number, ownHeight: number}) {
-  // Layout
-  const gridSideWidth = () => Math.floor(props.ownWidth / boxWidth)
-  const gridSideHeight = () => Math.floor(props.ownHeight / boxWidth)
-
-  const numBoxes = createMemo(() => gridSideWidth() * gridSideHeight());
-
-  // GraphQL
-  const graphQLClient = createGraphQLClient("http://localhost:5000/graphql");
-  const [data, {refetch}] = graphQLClient<{ getNSidebarItems: Array<SidebarItemInterface>}>(
-    gql`
-      query SidebarItems(
-        $limit: Int!,
-        $search: String!,
-        $mode: String!
-      ) {
-        getNSidebarItems(limit: $limit, search: $search, mode: $mode) {
-          itemId
-          localizedName
-          tooltip
-          imageFilePath
-        }
-      }
-    `,
-    () => ({
-      limit: numBoxes(),
-      search: appState.search,
-      mode: "contains",
-    }),
-    { getNSidebarItems: [] } // Initial value
-  );
-
-  return (
-    <>
-      <div
-        style={{
-          display: "grid",
-          "grid-template-rows": `repeat(${gridSideHeight()}, ${boxWidth}px)`,
-          "grid-template-columns": `repeat(${gridSideWidth()}, ${boxWidth}px)`,
-        }}
-      >
-        <Show when={!data.loading}>
-          <Index each={Array.from({ length: numBoxes()})}>
-            {(_, index) => {
-              const tooltipLabel = `${data()?.getNSidebarItems?.[index]?.['tooltip']}`
-              const basic_display_info = data()?.getNSidebarItems?.[index]
-
-              return (
-                <ClickableItem 
-                  tooltipLabel={tooltipLabel}
-                  // @ts-ignore
-                  basic_display_info={basic_display_info}
-                  divClass={"cell"}
-                  scaleFactor={1}
-                />
-              );
-            }}
-          </Index>
-        </Show>
-      </div>
-    </>
-  );
+interface ItemsProps {
+  ownWidth: number
+  ownHeight: number
 }
 
-export default Items;
+export default function Items({ ownWidth, ownHeight }: ItemsProps) {
+  const { search } = useAppState()
+
+  const gridSideWidth = Math.floor(ownWidth / BOX_WIDTH)
+  const gridSideHeight = Math.floor(ownHeight / BOX_WIDTH)
+  const numBoxes = useMemo(
+    () => gridSideWidth * gridSideHeight,
+    [gridSideWidth, gridSideHeight]
+  )
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['sidebarItems', numBoxes, search],
+    queryFn: async () => {
+      const result = await graphqlClient.request<{
+        getNSidebarItems: SidebarItemInterface[]
+      }>(SIDEBAR_ITEMS_QUERY, {
+        limit: numBoxes,
+        search: search,
+        mode: 'contains',
+      })
+      return result.getNSidebarItems
+    },
+    enabled: numBoxes > 0,
+  })
+
+  const items = data ?? []
+
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateRows: `repeat(${gridSideHeight}, ${BOX_WIDTH}px)`,
+        gridTemplateColumns: `repeat(${gridSideWidth}, ${BOX_WIDTH}px)`,
+      }}
+    >
+      {!isLoading &&
+        Array.from({ length: numBoxes }).map((_, index) => {
+          const item = items[index]
+          const tooltipLabel = item?.tooltip ?? ''
+
+          const basicDisplayInfo =
+            item?.itemId && item?.localizedName && item?.imageFilePath
+              ? {
+                  itemId: item.itemId,
+                  localizedName: item.localizedName,
+                  tooltip: item.tooltip ?? '',
+                  imageFilePath: item.imageFilePath,
+                }
+              : undefined
+
+          return (
+            <ClickableItem
+              key={index}
+              tooltipLabel={tooltipLabel}
+              basic_display_info={basicDisplayInfo}
+              divClass="cell"
+              scaleFactor={1}
+            />
+          )
+        })}
+    </div>
+  )
+}
