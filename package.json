@@ -7,26 +7,25 @@
   },
   "type": "module",
   "devDependencies": {
-    "@types/node": "^18.11.18",
-    "esbuild": "^0.14.54",
-    "postcss": "^8.4.21",
-    "solid-start-node": "^0.2.19",
-    "typescript": "^4.9.4",
-    "vite": "^4.1.4"
+    "@types/bun": "^1.2.17",
+    "@types/node": "^25.0.3",
+    "esbuild": "^0.27.2",
+    "postcss": "^8.5.6",
+    "solid-start-node": "^0.3.11",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.0"
   },
   "dependencies": {
     "@hope-ui/solid": "^0.6.7",
-    "@solid-primitives/graphql": "^1.5.7",
-    "@solid-primitives/scheduled": "^1.3.2",
-    "@solidjs/meta": "^0.28.2",
-    "@solidjs/router": "^0.8.2",
+    "@solid-primitives/graphql": "^2.2.2",
+    "@solid-primitives/scheduled": "^1.5.2",
+    "@solidjs/meta": "^0.29.4",
+    "@solidjs/router": "^0.15.4",
     "@stitches/core": "^1.2.8",
-    "solid-js": "^1.7.2",
-    "solid-start": "^0.2.26",
-    "solid-transition-group": "^0.0.10",
-    "undici": "^5.15.1"
+    "solid-js": "^1.9.10",
+    "solid-start": "^0.3.11",
+    "solid-transition-group": "^0.3.0",
+    "undici": "^7.16.0"
   },
-  "engines": {
-    "node": ">=16.8"
-  }
+  "packageManager": "bun@1.3.5"
 }

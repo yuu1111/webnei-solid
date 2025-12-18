@@ -89,8 +89,20 @@ function ClickableItem(props: ClickableItemProps) {
       <Show when={props.basic_display_info} fallback={<></>}>
         <Tooltip
           className="tooltip"
-          label={JSON.parse(`{"str": "${props.tooltipLabel}"}`).str} // This fixes escaped unicode
-          placement="right" 
+          label={(() => {
+            try {
+              // Escape control characters before JSON parse
+              const escaped = props.tooltipLabel
+                .replace(/\\/g, '\\\\')
+                .replace(/\n/g, '\\n')
+                .replace(/\r/g, '\\r')
+                .replace(/\t/g, '\\t');
+              return JSON.parse(`{"str": "${escaped}"}`).str;
+            } catch {
+              return props.tooltipLabel;
+            }
+          })()}
+          placement="right"
           closeOnClick={false}
           overflow="hidden"
         >
